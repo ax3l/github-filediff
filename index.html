@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>GitHub File Diff</title>
+    <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+Based on <a href="https://github.com/kpdecker/jsdiff" target="_blank">github.com/kpdecker/jsdiff</a>.
+
+<div id="settings">
+    <h1>Diff</h1>
+    <label><input type="radio" name="diff_type" value="diffChars" checked> Chars</label>
+    <label><input type="radio" name="diff_type" value="diffWords"> Words</label>
+    <label><input type="radio" name="diff_type" value="diffLines"> Lines</label>
+</div>
+
+<table>
+    <tr>
+        <td contenteditable="true" id="a">restaurant</td>
+        <td contenteditable="true" id="b">aura</td>
+        <td><pre id="result"></pre></td>
+    </tr>
+</table>
+
+<script src="bower_components/jsdiff/diff.js"></script>
+<script src="bower_components/jquery/dist/jquery.min.js"></script>
+
+<script defer>
+var a = document.getElementById('a');
+var b = document.getElementById('b');
+var result = document.getElementById('result');
+
+function changed() {
+    var diff = JsDiff[window.diffType](a.textContent, b.textContent);
+    var fragment = document.createDocumentFragment();
+    for (var i=0; i < diff.length; i++) {
+
+        if (diff[i].added && diff[i + 1] && diff[i + 1].removed) {
+            var swap = diff[i];
+            diff[i] = diff[i + 1];
+            diff[i + 1] = swap;
+        }
+
+        var node;
+        if (diff[i].removed) {
+            node = document.createElement('del');
+            node.appendChild(document.createTextNode(diff[i].value));
+        } else if (diff[i].added) {
+            node = document.createElement('ins');
+            node.appendChild(document.createTextNode(diff[i].value));
+        } else {
+            node = document.createTextNode(diff[i].value);
+        }
+        fragment.appendChild(node);
+    }
+
+    result.textContent = '';
+    result.appendChild(fragment);
+}
+
+window.onload = function() {
+    onDiffTypeChange(document.querySelector('#settings [name="diff_type"]:checked'));
+    changed();
+};
+
+$(document).ready(function() {
+    var myUrl = window.location.href;
+    // syntax
+    // https://ax3l.github.io/github-filediff?<user>/<repo>/<sha1>..<sha2>/path/to/file.name
+
+    // GitHub file url
+    // https://github.com/<user>/<repo>/blob/<sha|branch|tag>/CHANGELOG.md
+
+    // GitHub raw urls:
+    // https://raw.githubusercontent.com/<user>/<repo>/<sha|branch|tag>/CHANGELOG.md
+
+var nonDomain = myUrl.split('?')[1];
+var user = nonDomain.split('/')[0];
+var repo = nonDomain.split('/')[1];
+var shas = nonDomain.split('/')[2];
+var file = nonDomain.split(user + '/' + repo + '/' + shas + '/')[1];
+
+var shaA = shas.split('..')[0];
+var shaB = shas.split('..')[1];
+
+var fileA = "https://raw.githubusercontent.com/";
+var fileB = fileA;
+
+fileA += user + '/' + repo + '/' + shaA + '/' + file;
+fileB += user + '/' + repo + '/' + shaB + '/' + file;
+
+$.get( fileA, function( data ) {
+  $( "#a" ).html( data );
+  //alert( "Load A was performed." );
+  changed();
+});
+$.get( fileB, function( data ) {
+  $( "#b" ).html( data );
+  //alert( "Load B was performed." );
+  changed();
+});
+
+/*
+    a.onpaste = a.onchange =
+    b.onpaste = b.onchange = changed;
+
+    if ('oninput' in a) {
+        a.oninput = b.oninput = changed;
+    } else {
+        a.onkeyup = b.onkeyup = changed;
+    }*/
+
+    var radio = document.getElementsByName('diff_type');
+    for (var i = 0; i < radio.length; i++) {
+        radio[i].onchange = function(e) {
+            onDiffTypeChange(e.target);
+            changed();
+        }
+    }
+});
+
+function onDiffTypeChange(radio) {
+    window.diffType = radio.value;
+    document.title = "Diff " + radio.value.slice(4);
+}
+</script>
+</body>
+</html>

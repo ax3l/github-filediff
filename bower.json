@@ -1,0 +1,24 @@
+{
+  "name": "github-filediff",
+
+  "version": "0.0.0",
+  "homepage": "https://github.com/ax3l/github-filediff",
+  "authors": [
+    "Axel Huebl"
+  ],
+  "description": "js based online diff per file for github",
+  "license": "AGPLv3",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+
+  "dependencies": {
+    "jquery": ">= 2.1.4",
+    "jsdiff": ">= 2.1.3"
+  }
+}
