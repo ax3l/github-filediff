@@ -9,7 +9,9 @@ Based Kevin Decker's [jsdiff](https://github.com/kpdecker/jsdiff) and jQuery
 Usage
 -----
 
+```
 https://ax3l.github.io/github-filediff?<user>/<repo>/<sha1>..<sha2>/path/to/file.name
+```
 
 Example
 -------
