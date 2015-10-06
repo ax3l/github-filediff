@@ -14,12 +14,13 @@ Based on <a href="https://github.com/kpdecker/jsdiff" target="_blank">github.com
     <label><input type="radio" name="diff_type" value="diffChars"> Chars</label>
     <label><input type="radio" name="diff_type" value="diffWords"> Words</label>
     <label><input type="radio" name="diff_type" value="diffLines" checked> Lines</label>
+    <label><input type="radio" name="diff_type" value="createPatch"> Patch</label>
 </div>
 
 <table>
     <tr>
-        <td contenteditable="true" id="a">restaurant</td>
-        <td contenteditable="true" id="b">aura</td>
+        <td contenteditable="true" id="a">fileA</td>
+        <td contenteditable="true" id="b">fileB</td>
         <td><pre id="result"></pre></td>
     </tr>
 </table>
@@ -33,27 +34,36 @@ var b = document.getElementById('b');
 var result = document.getElementById('result');
 
 function changed() {
-    var diff = JsDiff[window.diffType](a.textContent, b.textContent);
-    var fragment = document.createDocumentFragment();
-    for (var i=0; i < diff.length; i++) {
-
-        if (diff[i].added && diff[i + 1] && diff[i + 1].removed) {
-            var swap = diff[i];
-            diff[i] = diff[i + 1];
-            diff[i + 1] = swap;
-        }
-
-        var node;
-        if (diff[i].removed) {
-            node = document.createElement('del');
-            node.appendChild(document.createTextNode(diff[i].value));
-        } else if (diff[i].added) {
-            node = document.createElement('ins');
-            node.appendChild(document.createTextNode(diff[i].value));
-        } else {
-            node = document.createTextNode(diff[i].value);
-        }
+    if (window.diffType == "createPatch") {
+        var patch = JsDiff[window.diffType]("file", a.textContent, b.textContent, "shaA", "shaB");
+        var fragment = document.createDocumentFragment();
+        var node = document.createTextNode(patch);
         fragment.appendChild(node);
+    }
+    else
+    {
+        var diff = JsDiff[window.diffType](a.textContent, b.textContent);
+        var fragment = document.createDocumentFragment();
+        for (var i=0; i < diff.length; i++) {
+
+            if (diff[i].added && diff[i + 1] && diff[i + 1].removed) {
+                var swap = diff[i];
+                diff[i] = diff[i + 1];
+                diff[i + 1] = swap;
+            }
+
+            var node;
+            if (diff[i].removed) {
+                node = document.createElement('del');
+                node.appendChild(document.createTextNode(diff[i].value));
+            } else if (diff[i].added) {
+                node = document.createElement('ins');
+                node.appendChild(document.createTextNode(diff[i].value));
+            } else {
+                node = document.createTextNode(diff[i].value);
+            }
+            fragment.appendChild(node);
+        }
     }
 
     result.textContent = '';
